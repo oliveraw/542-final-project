@@ -1,3 +1,5 @@
 dataset/waic-tsc/*
 
 env/
+
+*__pycache__*
