@@ -6,7 +6,9 @@
 # not add to version control.
 
 # datasets
-dataset/waic-tsc/*
+dataset/waic-tsr/*
+
+outputs/*
 
 # EECS 485 All Projects
 submit.tar.gz

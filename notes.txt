@@ -1,0 +1,3 @@
+Run some file in the directory (works as long as everything has __init__.py)
+python3.10 -m dataset.test-dataset.py
+
