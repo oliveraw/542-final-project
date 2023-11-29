@@ -6,7 +6,7 @@
 # not add to version control.
 
 # datasets
-dataset/waic-tsr/*
+# dataset/waic-tsr/*
 
 outputs/*
 
