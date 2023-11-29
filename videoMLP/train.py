@@ -1,7 +1,7 @@
 import config
 from utils import save_checkpoint
 from utils import torchify
-import videoMLP
+from videoMLP.videoMLP import VideoMLP
 
 import torch
 import torch.nn as nn
@@ -31,7 +31,7 @@ def train_model(run_name, B, dataset):
     # do this just to get shape
     (first_xyt, _, _, _) = next(iter(dataset))
     in_channels = input_mapping(first_xyt, B).shape[-1]
-    model = videoMLP(in_channels)
+    model = VideoMLP(in_channels)
     model = model.to(device=device)
 
     model_loss = nn.MSELoss()
@@ -57,6 +57,7 @@ def train_model(run_name, B, dataset):
         gt_video_test = []
         for data in dataset:
             xyt_train, gt_train, xyt_test, gt_test = data
+            xyt_train, gt_train, xyt_test, gt_test = xyt_train.to(device=device), gt_train.to(device=device), xyt_test.to(device=device), gt_test.to(device=device)
 
             optimizer.zero_grad()
 
@@ -94,8 +95,8 @@ def train_model(run_name, B, dataset):
             # print("train_ssims:", train_ssims, "test_ssims:", test_ssims)
 
             if RECORD_STATE:
-              all_generated_videos_train.append(generated_video_train)
-              all_generated_videos_test.append(generated_video_test)
+              all_generated_videos_train.append(generated_video_train.cpu().detach().numpy())
+              all_generated_videos_test.append(generated_video_test.cpu().detach().numpy())
               save_checkpoint(run_name,
                               i, 
                               255 * generated_video_train, 
@@ -113,7 +114,7 @@ def train_model(run_name, B, dataset):
         'test_psnrs': test_psnrs,
         'train_ssims': train_ssims,
         'test_ssims': test_ssims,
-        'pred_train_vids': torch.stack(all_generated_videos_train).cpu().detach().numpy(),
-        'pred_test_vids': torch.stack(all_generated_videos_test).cpu().detach().numpy(),
+        'pred_train_vids': np.stack(all_generated_videos_train),
+        'pred_test_vids': np.stack(all_generated_videos_test),
         # 'xs': xs,
     }
