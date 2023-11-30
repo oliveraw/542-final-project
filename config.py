@@ -31,8 +31,10 @@ RECORD_STATE_INTERVAL = 1000
 MAPPING_SIZE = 256
 
 if torch.cuda.is_available():
+  print("using GPU")  
   DEVICE='cuda'
 else:
+  print("using CPU")
   DEVICE='cpu'
 
 
