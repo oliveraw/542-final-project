@@ -23,8 +23,8 @@ def input_mapping(x, B):
     return res
 
 
-from torchmetrics.image import PeakSignalNoiseRatio
-from torchmetrics.image import StructuralSimilarityIndexMeasure
+from torchmetrics.functional.image import peak_signal_noise_ratio
+from torchmetrics.functional.image import structural_similarity_index_measure
 # Train model with given hyperparameters and data
 def train_model(run_name, B, dataset):
 
@@ -34,8 +34,8 @@ def train_model(run_name, B, dataset):
 
     model = VideoMLP(in_channels).to(device)
     model_loss = nn.MSELoss()
-    model_psnr = PeakSignalNoiseRatio().to(device)
-    model_ssim = StructuralSimilarityIndexMeasure(data_range=1.0).to(device)
+    # model_psnr = PeakSignalNoiseRatio().to(device)
+    # model_ssim = StructuralSimilarityIndexMeasure(data_range=1.0).to(device)
     optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
 
     record_iterations = []
@@ -46,7 +46,7 @@ def train_model(run_name, B, dataset):
     all_generated_videos_train = []
     all_generated_videos_test = []
     xs = []
-    for i in range(config.ITERATIONS):
+    for i in range(config.ITERATIONS+1):
         RECORD_METRICS = i % config.RECORD_METRICS_INTERVAL == 0
         RECORD_STATE = i % config.RECORD_STATE_INTERVAL == 0
 
@@ -85,19 +85,22 @@ def train_model(run_name, B, dataset):
             record_iterations.append(i)
             
             if config.RECORD_PSNR:
-              train_psnrs.append(model_psnr(generated_video_train, gt_video_train).item())
-              test_psnrs.append(model_psnr(generated_video_test, gt_video_test).item())
+              # train_psnrs.append(model_psnr(generated_video_train, gt_video_train).item())
+              # test_psnrs.append(model_psnr(generated_video_test, gt_video_test).item())
+              train_psnrs.append(peak_signal_noise_ratio(generated_video_train, gt_video_train).item())
+              test_psnrs.append(peak_signal_noise_ratio(generated_video_test, gt_video_test).item())
             
             if config.RECORD_SSIM:
-              train_ssims.append(model_ssim(generated_video_train, gt_video_train).item())
-              test_ssims.append(model_ssim(generated_video_test, gt_video_test).item())
-
-            # print("train psnrs:", train_psnrs, "test_psnrs:", test_psnrs)
-            # print("train_ssims:", train_ssims, "test_ssims:", test_ssims)
+              # train_ssims.append(model_ssim(generated_video_train, gt_video_train).item())
+              # test_ssims.append(model_ssim(generated_video_test, gt_video_test).item())
+              train_ssims.append(structural_similarity_index_measure(generated_video_train, gt_video_train).item())
+              test_ssims.append(structural_similarity_index_measure(generated_video_test, gt_video_test).item())
 
             if RECORD_STATE:
-              all_generated_videos_train.append(generated_video_train.cpu().detach().numpy())
-              all_generated_videos_test.append(generated_video_test.cpu().detach().numpy())
+              generated_video_train = generated_video_train.cpu().detach().numpy()
+              generated_video_test = generated_video_test.cpu().detach().numpy()
+              all_generated_videos_train.append(generated_video_train)
+              all_generated_videos_test.append(generated_video_test)
               save_checkpoint(run_name,
                               i, 
                               generated_video_train, 

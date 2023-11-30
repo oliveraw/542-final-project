@@ -16,7 +16,7 @@ B_dict['none'] = None
 # B_dict['basic'] = torch.eye(2).to(device)
 
 # Three different scales of Gaussian Fourier feature mappings
-B_gauss = torch.randn((config.MAPPING_SIZE, 3)).to(device=config.DEVICE)
+B_gauss = torch.randn((config.MAPPING_SIZE, 3)).to(config.DEVICE)
 for scale in [1., 10., 100.]:
   B_dict[f'gauss_{scale}'] = B_gauss * scale
 
