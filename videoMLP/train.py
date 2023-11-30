@@ -30,7 +30,7 @@ def train_model(run_name, B, dataset):
 
     # do this just to get shape
     (first_xyt, _, _, _) = next(iter(dataset))
-    in_channels = input_mapping(first_xyt, B).shape[-1]
+    in_channels = input_mapping(first_xyt.to(device=device), B).shape[-1]
     model = VideoMLP(in_channels)
     model = model.to(device=device)
 
