@@ -54,7 +54,7 @@ def save_videos(output_dir, i, videos):
         video = np.transpose(video, (0, 2, 3, 1))
 
         fourcc = cv2.VideoWriter_fourcc(*config.CODEC)
-        save_video_train = cv2.VideoWriter(video_path, fourcc, config.FPS, (H, W))
+        save_video_train = cv2.VideoWriter(video_path, fourcc, config.FPS, (W, H))
 
         print("writing train video of shape", video.shape, video_path)
         for frame in range(T):
