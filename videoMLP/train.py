@@ -38,14 +38,13 @@ def train_model(run_name, B, dataset):
     # model_ssim = StructuralSimilarityIndexMeasure(data_range=1.0).to(device)
     optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
 
-    record_iterations = []
+    iterations = []
     train_psnrs = []
     test_psnrs = []
     train_ssims = []
     test_ssims = []
     all_generated_videos_train = []
     all_generated_videos_test = []
-    xs = []
     for i in range(config.ITERATIONS+1):
         RECORD_METRICS = i % config.RECORD_METRICS_INTERVAL == 0
         RECORD_STATE = i % config.RECORD_STATE_INTERVAL == 0
@@ -82,7 +81,7 @@ def train_model(run_name, B, dataset):
             gt_video_train = torch.stack(gt_video_train)
             gt_video_test = torch.stack(gt_video_test)
 
-            record_iterations.append(i)
+            iterations.append(i)
             
             if config.RECORD_PSNR:
               # train_psnrs.append(model_psnr(generated_video_train, gt_video_train).item())
@@ -97,28 +96,22 @@ def train_model(run_name, B, dataset):
               test_ssims.append(structural_similarity_index_measure(generated_video_test, gt_video_test).item())
 
             if RECORD_STATE:
-              generated_video_train = generated_video_train.cpu().detach().numpy()
-              generated_video_test = generated_video_test.cpu().detach().numpy()
-              all_generated_videos_train.append(generated_video_train)
-              all_generated_videos_test.append(generated_video_test)
+              generated_video_train = generated_video_train.cpu().detach()
+              generated_video_test = generated_video_test.cpu().detach()
+              all_generated_videos_train.append(generated_video_train.numpy())
+              all_generated_videos_test.append(generated_video_test.numpy())
               save_checkpoint(run_name,
                               i, 
                               generated_video_train, 
                               generated_video_test,
-                              model,
-                              record_iterations, 
-                              train_psnrs,
-                              test_psnrs, 
-                              train_ssims,
-                              test_ssims)
+                              model)
 
     return {
-        # 'state': get_params(opt_state),
+        'iterations': iterations,
         'train_psnrs': train_psnrs,
         'test_psnrs': test_psnrs,
         'train_ssims': train_ssims,
         'test_ssims': test_ssims,
         'pred_train_vids': np.stack(all_generated_videos_train),
         'pred_test_vids': np.stack(all_generated_videos_test),
-        # 'xs': xs,
     }

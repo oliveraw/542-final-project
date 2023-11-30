@@ -1,6 +1,7 @@
 import dataset
 import config
 from videoMLP.train import train_model
+from utils import save_figs_end
 
 import torch
 
@@ -24,8 +25,10 @@ for scale in [1., 10., 100.]:
 outputs = {}
 for k in B_dict:
   print("starting training for", k)
-  outputs[k] = {}
-  outputs[k]['standard'] = train_model(k, B_dict[k], waic_dataset)
+  outputs[k] = train_model(k, B_dict[k], waic_dataset)
   # outputs[k]['PEG'] = train_model(network_size, learning_rate, iters, B_dict[k], train_data, test_data, True)
+
+# showing final metrics
+save_figs_end(outputs)
 
 print("completed execution of run.py")

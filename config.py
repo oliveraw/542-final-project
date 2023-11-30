@@ -23,12 +23,12 @@ USE_PEG = False
 
 # training related
 LEARNING_RATE = 1e-4
-# ITERATIONS = 6000
-ITERATIONS = 1
+ITERATIONS = 6000
+# ITERATIONS = 1
 RECORD_STATE_INTERVAL = 1000
 RECORD_METRICS_INTERVAL = 25
 RECORD_PSNR = True
-RECORD_SSIM = True   # idk why just takes too much memory, disable for rn
+RECORD_SSIM = True
 
 # positional encoding dim
 MAPPING_SIZE = 256
