@@ -2,12 +2,6 @@ import config
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
-
-if torch.cuda.is_available():
-  device='cuda'
-else:
-  device='cpu'
 
 # in_channels is the only variable layer: depends on positional embedding size
 # input size: (H, W, 3)

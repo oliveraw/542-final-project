@@ -30,13 +30,12 @@ def train_model(run_name, B, dataset):
 
     # do this just to get shape
     (first_xyt, _, _, _) = next(iter(dataset))
-    in_channels = input_mapping(first_xyt.to(device=device), B).shape[-1]
-    model = VideoMLP(in_channels)
-    model = model.to(device=device)
+    in_channels = input_mapping(first_xyt.to(device), B).shape[-1]
 
+    model = VideoMLP(in_channels).to(device)
     model_loss = nn.MSELoss()
-    model_psnr = PeakSignalNoiseRatio().to(device=device)
-    model_ssim = StructuralSimilarityIndexMeasure(data_range=1.0).to(device=device)
+    model_psnr = PeakSignalNoiseRatio().to(device)
+    model_ssim = StructuralSimilarityIndexMeasure(data_range=1.0).to(device)
     optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
 
     record_iterations = []
@@ -57,11 +56,11 @@ def train_model(run_name, B, dataset):
         gt_video_test = []
         for data in dataset:
             xyt_train, gt_train, xyt_test, gt_test = data
-            xyt_train, gt_train, xyt_test, gt_test = xyt_train.to(device=device), gt_train.to(device=device), xyt_test.to(device=device), gt_test.to(device=device)
+            xyt_train, gt_train, xyt_test, gt_test = xyt_train.to(device), gt_train.to(device), xyt_test.to(device), gt_test.to(device)
 
             optimizer.zero_grad()
 
-            y_train_pred = model(input_mapping(xyt_train, B)).to(device=device)
+            y_train_pred = model(input_mapping(xyt_train, B)).to(device)
 
             if RECORD_METRICS:
                 generated_video_train.append(torchify(y_train_pred))
@@ -84,12 +83,14 @@ def train_model(run_name, B, dataset):
             gt_video_test = torch.stack(gt_video_test)
 
             record_iterations.append(i)
-
-            train_psnrs.append(model_psnr(generated_video_train, gt_video_train).item())
-            test_psnrs.append(model_psnr(generated_video_test, gt_video_test).item())
             
-            train_ssims.append(model_ssim(generated_video_train, gt_video_train).item())
-            test_ssims.append(model_ssim(generated_video_test, gt_video_test).item())
+            if config.RECORD_PSNR:
+              train_psnrs.append(model_psnr(generated_video_train, gt_video_train).item())
+              test_psnrs.append(model_psnr(generated_video_test, gt_video_test).item())
+            
+            if config.RECORD_SSIM:
+              train_ssims.append(model_ssim(generated_video_train, gt_video_train).item())
+              test_ssims.append(model_ssim(generated_video_test, gt_video_test).item())
 
             # print("train psnrs:", train_psnrs, "test_psnrs:", test_psnrs)
             # print("train_ssims:", train_ssims, "test_ssims:", test_ssims)

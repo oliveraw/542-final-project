@@ -10,8 +10,8 @@ VIDEO_NAME = "water"
 VIDEO_DIR = os.path.join(DATA_DIR, f"{VIDEO_NAME}/ground_truth/{VIDEO_NAME}")
 
 FRAME_SUFFIX = ".png"
-# NUM_FRAMES = 100
-NUM_FRAMES = 1
+NUM_FRAMES = 100
+# NUM_FRAMES = 2
 RESOLUTION = (360, 640)   # this refers to the test resolution, which will be 2x train resolution
 TRAIN_RESOLUTION_PIXEL_SKIP = 2
 BATCH_SIZE = 1
@@ -23,21 +23,21 @@ USE_PEG = False
 
 # training related
 LEARNING_RATE = 1e-4
-# ITERATIONS = 2000
-ITERATIONS = 2
+ITERATIONS = 6001
+# ITERATIONS = 1
+RECORD_STATE_INTERVAL = ITERATIONS // 6  
 RECORD_METRICS_INTERVAL = 25
-RECORD_STATE_INTERVAL = 1000
+RECORD_PSNR = True
+RECORD_SSIM = False   # idk why just takes too much memory, disable for rn
 
-# positional encoding
+# positional encoding dim
 MAPPING_SIZE = 256
 
 if torch.cuda.is_available():
-  print("using GPU")  
   DEVICE='cuda'
 else:
-  print("using CPU")
   DEVICE='cpu'
-
+print(DEVICE)
 
 # save configs
 FPS = 30

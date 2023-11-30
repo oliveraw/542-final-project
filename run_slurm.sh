@@ -8,7 +8,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem-per-cpu=8000m 
-#SBATCH --time=7:59
+#SBATCH --time=07:59:55
 #SBATCH --account=eecs542s001f23_class
 #SBATCH --partition=gpu
 #SBATCH --gpus=1

@@ -21,16 +21,17 @@ def save_checkpoint(run_name,
 
     save_videos(output_dir, i, generated_video_train, generated_video_test)
     save_model(output_dir, i, model)
-    metrics = {
-        "PSNR": {
+    metrics = {}
+    if config.RECORD_PSNR:
+        metrics["PSNR"] = {
             "Train": train_psnrs,
             "Test": test_psnrs,
-        }, 
-        "SSIM": {
+        }
+    if config.RECORD_SSIM:
+        metrics["SSIM"] = {
             "Train": train_ssims,
             "Test": test_ssims
         }
-    }
     save_figs(output_dir, i, record_iterations, metrics)
 
 
