@@ -44,8 +44,9 @@ class WAIC_TSR(Dataset):
         gt_image = gt_image.permute(1, 2, 0)
         gt_image = gt_image / 255.0       # normalize pixels to [0,1]
 
-        xyt_half = xyt[::2, ::2, :]
-        gt_image_half = gt_image[::2, ::2, :]
+        skip = config.TRAIN_RESOLUTION_PIXEL_SKIP
+        xyt_half = xyt[::skip, ::skip, :]
+        gt_image_half = gt_image[::skip, ::skip, :]
 
         return xyt_half, gt_image_half, xyt, gt_image
 

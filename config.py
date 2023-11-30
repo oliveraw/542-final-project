@@ -13,6 +13,7 @@ FRAME_SUFFIX = ".png"
 # NUM_FRAMES = 100
 NUM_FRAMES = 1
 RESOLUTION = (360, 640)   # this refers to the test resolution, which will be 2x train resolution
+TRAIN_RESOLUTION_PIXEL_SKIP = 2
 BATCH_SIZE = 1
 
 # model related

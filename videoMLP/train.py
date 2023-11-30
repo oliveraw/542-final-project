@@ -99,8 +99,8 @@ def train_model(run_name, B, dataset):
               all_generated_videos_test.append(generated_video_test.cpu().detach().numpy())
               save_checkpoint(run_name,
                               i, 
-                              255 * generated_video_train, 
-                              255 * generated_video_test,
+                              generated_video_train, 
+                              generated_video_test,
                               model,
                               record_iterations, 
                               train_psnrs,

@@ -2,7 +2,8 @@ import config
 
 import os
 import torch
-from torchvision.io import write_video
+# from torchvision.io import write_video
+from torchvision.utils import save_image
 import matplotlib.pyplot as plt
 
 def save_checkpoint(run_name,
@@ -35,15 +36,23 @@ def save_checkpoint(run_name,
 
 # videos come in as (T, C, H, W) format
 def save_videos(output_dir, i, generated_video_train, generated_video_test):
-    train_path = os.path.join(output_dir, f"videoMLP_train_{i}.mp4")
-    test_path = os.path.join(output_dir, f"videoMLP_test_{i}.mp4")
+    train_dir_path = os.path.join(output_dir, f"videoMLP_train_{i}")
+    test_dir_path = os.path.join(output_dir, f"videoMLP_test_{i}")
+    os.makedirs(train_dir_path, exist_ok=True)
+    os.makedirs(test_dir_path, exist_ok=True)
 
-    generated_video_train = generated_video_train.permute((0, 2, 3, 1))
-    generated_video_test = generated_video_test.permute((0, 2, 3, 1))
+    # generated_video_train = generated_video_train.permute((0, 2, 3, 1))
+    # generated_video_test = generated_video_test.permute((0, 2, 3, 1))
 
-    print("writing train video of shape", generated_video_train.shape, train_path)
-    write_video(train_path, generated_video_train, fps=config.FPS)
-    write_video(test_path, generated_video_test, fps=config.FPS)
+    print("writing train video of shape", generated_video_train.shape, train_dir_path)
+    t = generated_video_train.shape[0]
+    for frame in range(t):
+        # print(generated_video_train[frame])
+        save_image(generated_video_train[frame], os.path.join(train_dir_path, f"{frame}.png"), format="png")
+        save_image(generated_video_test[frame], os.path.join(test_dir_path, f"{frame}.png"), format="png")
+
+    # write_video(train_dir_path, generated_video_train, fps=config.FPS)
+    # write_video(test_dir_path, generated_video_test, fps=config.FPS)
 
     
 def save_model(output_dir, i, model):
