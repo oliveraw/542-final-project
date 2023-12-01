@@ -45,7 +45,7 @@ def train_model(run_name, B, dataset):
     test_ssims = []
     all_generated_videos_train = []
     all_generated_videos_test = []
-    for i in range(config.ITERATIONS+1):
+    for i in range(config.ITERATIONS):
         RECORD_METRICS = i % config.RECORD_METRICS_INTERVAL == 0
         RECORD_STATE = i % config.RECORD_STATE_INTERVAL == 0
 
