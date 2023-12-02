@@ -7,6 +7,7 @@
 
 # datasets
 *dataset/waic-tsr/*
+*dataset/cifar10*
 
 *outputs/*
 
