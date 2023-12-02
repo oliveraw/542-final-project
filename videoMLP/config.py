@@ -8,7 +8,13 @@ if torch.cuda.is_available():
   DEVICE='cuda'
 else:
   DEVICE='cpu'
-print(DEVICE)
+
+# distributed training
+DISTRIBUTED = True
+NUM_GPUS = 2 if DISTRIBUTED else 1    # num gpus
+GPU_BACKEND = "gloo"
+MASTER_ADDR = "localhost"
+MASTER_PORT = "12345"
 
 ROOT_DIR = os.path.join("/home/oliveraw/eecs542/542-final-project/videoMLP")
 DATA_DIR = os.path.join(ROOT_DIR, "dataset/waic-tsr")
@@ -34,7 +40,7 @@ USE_PEG = False
 
 # training related
 LEARNING_RATE = 1e-4
-ITERATIONS = 1 if DEBUG else 3001
+ITERATIONS = 50 if DEBUG else 3000
 RECORD_STATE_INTERVAL = 1000
 RECORD_METRICS_INTERVAL = 25
 RECORD_PSNR = True
@@ -45,8 +51,8 @@ MAPPING_SIZE = 256
 # adding mapping matrices into this dict will induce another training run
 B_DICT = {}
 B_DICT['none'] = None                                 # Standard network - no mapping
-# B_DICT['basic'] = torch.eye(3).to(DEVICE)             # Basic mapping
-B_gauss = torch.randn((MAPPING_SIZE, 3)).to(DEVICE)     # Three different scales of Gaussian Fourier feature mappings
+# B_DICT['basic'] = torch.eye(3).to(DEVICE)           # Basic mapping
+B_gauss = torch.randn((MAPPING_SIZE, 3))              # Three different scales of Gaussian Fourier feature mappings
 GAUSSIAN_STDEV_SCALES = [1., 10., 100.]
 for scale in GAUSSIAN_STDEV_SCALES:
   B_DICT[f'gauss{scale}'] = B_gauss * scale
@@ -55,9 +61,6 @@ for scale in GAUSSIAN_STDEV_SCALES:
 # save related
 VIDEO_FORMAT = 'GIF'
 FPS = 30
-
-with open("config.py", "r") as f:
-  print(f.read())
 
 
 ########################## CONFIG.PY #################################

@@ -55,7 +55,8 @@ def save_figs_and_metrics(outputs):
     output_dir = config.OUTPUT_DIR
     os.makedirs(output_dir, exist_ok=True)
 
-    iterations = range(0, config.ITERATIONS, config.RECORD_METRICS_INTERVAL)
+    iterations = range(0, config.ITERATIONS // config.NUM_GPUS + 1, config.RECORD_METRICS_INTERVAL)
+    iterations = [config.NUM_GPUS * i for i in iterations]      # hacky, just to get iteration count in line with distributed gpu
     metrics = {}
     if config.RECORD_PSNR:
         metrics["PSNR"] = {

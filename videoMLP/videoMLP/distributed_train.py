@@ -3,12 +3,26 @@ from utils import save_checkpoint
 from utils import torchify
 from videoMLP.videoMLP import VideoMLP
 
+import os
 import torch
+import torch.distributed as dist
+import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.optim as optim
+from torch.nn.parallel import DistributedDataParallel as DDP
 import numpy as np
 
-device = config.DEVICE
+def setup(rank, world_size):
+    os.environ['MASTER_ADDR'] = config.MASTER_ADDR
+    os.environ['MASTER_PORT'] = config.MASTER_PORT
+
+    # initialize the process group
+    dist.init_process_group(config.GPU_BACKEND, rank=rank, world_size=world_size)
+
+
+def cleanup():
+    dist.destroy_process_group()
+
 
 # Fourier feature mapping
 # receives (H, W, 3) vector of (x, y, t)
@@ -21,18 +35,22 @@ def input_mapping(x, B):
     res = torch.concat([torch.sin(x_proj), torch.cos(x_proj)], dim=-1)
     # print("positional encoded shape", res.shape)
     return res
-
+  
 
 from torchmetrics.functional.image import peak_signal_noise_ratio
 from torchmetrics.functional.image import structural_similarity_index_measure
-# Train model with given hyperparameters and data
-def train_model(run_name, B, dataset):
+def train_model_distributed(rank, world_size, run_name, B, dataset, outputs_queue):
+    print(f"Running basic DDP training on rank {rank}, run name {run_name}")
+    setup(rank, world_size)
 
     # do this just to get shape
     (first_xyt, _, _, _) = next(iter(dataset))
-    in_channels = input_mapping(first_xyt.to(device), B).shape[-1]
+    if B != None:   # None indicates no postional encoding
+       B = B.to(rank)
+    in_channels = input_mapping(first_xyt.to(rank), B).shape[-1]
 
-    model = VideoMLP(in_channels).to(device)
+    model = VideoMLP(in_channels).to(rank)
+    model = DDP(model, device_ids=[rank])
     model_loss = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
 
@@ -42,9 +60,11 @@ def train_model(run_name, B, dataset):
     test_ssims = []
     all_generated_videos_train = []
     all_generated_videos_test = []
-    for i in range(config.ITERATIONS):
-        RECORD_METRICS = i % config.RECORD_METRICS_INTERVAL == 0
-        RECORD_STATE = i % config.RECORD_STATE_INTERVAL == 0
+    for i in range(config.ITERATIONS // config.NUM_GPUS + 1):
+        IS_MASTER = rank == 0
+        RECORD_METRICS = (i % config.RECORD_METRICS_INTERVAL == 0) and IS_MASTER
+        RECORD_STATE = (i % config.RECORD_STATE_INTERVAL == 0) and IS_MASTER
+        print("run name", run_name, "gpu rank", rank, "iteration", i)
 
         generated_video_train = []
         generated_video_test = []
@@ -52,11 +72,11 @@ def train_model(run_name, B, dataset):
         gt_video_test = []
         for data in dataset:
             xyt_train, gt_train, xyt_test, gt_test = data
-            xyt_train, gt_train, xyt_test, gt_test = xyt_train.to(device), gt_train.to(device), xyt_test.to(device), gt_test.to(device)
+            xyt_train, gt_train, xyt_test, gt_test = xyt_train.to(rank), gt_train.to(rank), xyt_test.to(rank), gt_test.to(rank)
 
             optimizer.zero_grad()
 
-            y_train_pred = model(input_mapping(xyt_train, B)).to(device)
+            y_train_pred = model(input_mapping(xyt_train, B)).to(rank)
 
             # print("actually predicted", y_train_pred.shape)
             loss = model_loss(y_train_pred, gt_train)
@@ -92,16 +112,33 @@ def train_model(run_name, B, dataset):
               all_generated_videos_train.append(generated_video_train)
               all_generated_videos_test.append(generated_video_test)
               save_checkpoint(run_name,
-                              i, 
+                              i * config.NUM_GPUS, 
                               generated_video_train, 
                               generated_video_test,
                               model)
 
-    return {
-        'train_psnrs': train_psnrs,
-        'test_psnrs': test_psnrs,
-        'train_ssims': train_ssims,
-        'test_ssims': test_ssims,
-        'pred_train_vids': np.stack(all_generated_videos_train),
-        'pred_test_vids': np.stack(all_generated_videos_test),
-    }
+    # not sure how to handle the metrics collection with distributed, assume just using master is ok
+    if IS_MASTER:
+        outputs_queue.put({
+            'train_psnrs': train_psnrs,
+            'test_psnrs': test_psnrs,
+            'train_ssims': train_ssims,
+            'test_ssims': test_ssims,
+            'pred_train_vids': np.stack(all_generated_videos_train),
+            'pred_test_vids': np.stack(all_generated_videos_test),
+        })
+    cleanup()
+
+
+def run_distributed_training(run_name, B, dataset):
+    world_size = config.NUM_GPUS
+
+    print("run distributed training", run_name)
+    manager = mp.Manager()
+    outputs_queue = manager.Queue()
+    mp.spawn(train_model_distributed,
+        args=(world_size, run_name, B, dataset, outputs_queue),
+        nprocs=world_size,
+        join=True)
+    print("finished training for", run_name)      # join=True ensures that whatever happens is after mp.spawn ends
+    return outputs_queue.get()
