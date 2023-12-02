@@ -1,1 +1,1 @@
-from .dataset import get_dataloader, get_dataset
+from .dataset import PE_CIFAR

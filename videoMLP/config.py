@@ -1,3 +1,4 @@
+########################## CONFIG.PY #################################
 import os
 import torch 
 
@@ -12,7 +13,7 @@ print(DEVICE)
 ROOT_DIR = os.path.join("/home/oliveraw/eecs542/542-final-project/videoMLP")
 DATA_DIR = os.path.join(ROOT_DIR, "dataset/waic-tsr")
 
-VIDEO_NAME = "water"
+VIDEO_NAME = "jelly"
 VIDEO_DIR = os.path.join(DATA_DIR, f"{VIDEO_NAME}/ground_truth/{VIDEO_NAME}")
 
 OUTPUT_DIR_NAME = f"outputs-debug-{VIDEO_NAME}" if DEBUG else f"outputs-{VIDEO_NAME}"
@@ -57,3 +58,6 @@ FPS = 30
 
 with open("config.py", "r") as f:
   print(f.read())
+
+
+########################## CONFIG.PY #################################
