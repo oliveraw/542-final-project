@@ -11,7 +11,7 @@ We apply a positional encoding, $\mathbf{B}$, which is a Gaussian random noise m
 
 |Ground Truth| No Positional Encoding | $\sigma = 1$ | $\sigma = 10$ | $\sigma = 100$ |
 |---|---|---|---|---|
-|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/gt.gif" width="48">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/none/videoMLP_Test_3000.gif" width="48">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/gauss1.0/videoMLP_Test_3000.gif" width="48">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/gauss10.0/videoMLP_Test_3000.gif" width="48">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/gauss100.0/videoMLP_Test_3000.gif" width="48">|
+|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/gt.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/none/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/gauss1.0/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/gauss10.0/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/gauss100.0/videoMLP_Test_3000.gif" width="150">|
 
 
 For training, we use.... We use videos at half-resolution for the train set, and test on videos at full resolution. 
