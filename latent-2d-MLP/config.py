@@ -13,7 +13,7 @@ print(DEVICE)
 ROOT_DIR = os.path.join("./")
 
 # data
-DATA_DIR = os.path.join(ROOT_DIR, "dataset")
+DATA_DIR = os.path.join(ROOT_DIR, "dataset", "rand-images")
 RESOLUTION = (224, 224)
 NUM_IMAGES_TO_USE = 10
 
@@ -22,7 +22,16 @@ PE_DIMENSION = 128
 LATENT_DIMENSION = 128
 NUM_LAYERS = 4
 NUM_CHANNELS = 512
-# SKIP_CONNECTION_INTERVAL = 
+# SKIP_CONNECTION_INTERVAL =
+
+# adding mapping matrices into this dict will induce another training run
+B_DICT = {}
+B_DICT['none'] = None                                 # Standard network - no mapping
+# B_DICT['basic'] = torch.eye(3).to(DEVICE)             # Basic mapping
+B_gauss = torch.randn((PE_DIMENSION, 2)).to(DEVICE)     # Three different scales of Gaussian Fourier feature mappings
+GAUSSIAN_STDEV_SCALES = [1., 10., 100.]
+for scale in GAUSSIAN_STDEV_SCALES:
+  B_DICT[f'gauss{scale}'] = B_gauss * scale 
 
 
 ######################################### below is not for this model
@@ -46,17 +55,6 @@ RECORD_STATE_INTERVAL = 1000
 RECORD_METRICS_INTERVAL = 25
 RECORD_PSNR = True
 RECORD_SSIM = True
-
-# which positional encodings to use   (the "B" matrix from fourier features high dimensional learning paper)
-MAPPING_SIZE = 256
-# adding mapping matrices into this dict will induce another training run
-B_DICT = {}
-B_DICT['none'] = None                                 # Standard network - no mapping
-# B_DICT['basic'] = torch.eye(3).to(DEVICE)             # Basic mapping
-B_gauss = torch.randn((MAPPING_SIZE, 2)).to(DEVICE)     # Three different scales of Gaussian Fourier feature mappings
-GAUSSIAN_STDEV_SCALES = [1., 10., 100.]
-for scale in GAUSSIAN_STDEV_SCALES:
-  B_DICT[f'gauss{scale}'] = B_gauss * scale
 
 
 # save related

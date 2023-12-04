@@ -64,7 +64,7 @@ def train_model_distributed(rank, world_size, run_name, B, dataset, outputs_queu
         IS_MASTER = rank == 0
         RECORD_METRICS = (i % config.RECORD_METRICS_INTERVAL == 0) and IS_MASTER
         RECORD_STATE = (i % config.RECORD_STATE_INTERVAL == 0) and IS_MASTER
-        print("run name", run_name, "gpu rank", rank, "iteration", i)
+        # print("run name", run_name, "gpu rank", rank, "iteration", i)
 
         generated_video_train = []
         generated_video_test = []

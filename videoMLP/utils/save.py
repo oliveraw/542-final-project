@@ -55,8 +55,6 @@ def save_figs_and_metrics(outputs):
     output_dir = config.OUTPUT_DIR
     os.makedirs(output_dir, exist_ok=True)
 
-    iterations = range(0, config.ITERATIONS // config.NUM_GPUS + 1, config.RECORD_METRICS_INTERVAL)
-    iterations = [config.NUM_GPUS * i for i in iterations]      # hacky, just to get iteration count in line with distributed gpu
     metrics = {}
     if config.RECORD_PSNR:
         metrics["PSNR"] = {
@@ -86,6 +84,7 @@ def save_figs_and_metrics(outputs):
             fig_path = os.path.join(metric_split_dir, f"{metric}_{split}.png")
             for run_name in metrics[metric][split]:
                 metrics_data = metrics[metric][split][run_name]
+                iterations = np.linspace(0, config.ITERATIONS + 1, len(metrics_data))
                 print("writing metric", metric, split, run_name, metrics_data)
 
                 data_path = os.path.join(metric_split_dir, f"{metric}_{split}_{run_name}.npy")

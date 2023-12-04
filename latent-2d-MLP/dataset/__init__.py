@@ -1,1 +1,1 @@
-from .dataset import PE_CIFAR
+from .dataset import PE_IMAGES
