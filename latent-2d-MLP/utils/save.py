@@ -1,43 +1,78 @@
 import config
 
-import os
 import torch
-import imageio
+import torchvision.io as io
 import numpy as np
 import matplotlib.pyplot as plt
-from torchvision.utils import save_image
+import os
 
-# videos and model are saved every config.RECORD_STATE_INTERVAL, metrics and figures are saved at the end of each training run
-def save_checkpoint(run_name,
-                    i, 
-                    generated_video_train, 
-                    generated_video_test,
-                    model):
-    checkpoint_dir = os.path.join(config.OUTPUT_DIR, f"{i}/{run_name}")
-    os.makedirs(checkpoint_dir, exist_ok=True)
+def save_final_checkpoint(run_name, dataset, model):
+    save_image_predictions(run_name, dataset, model)
+    save_latents_and_model(run_name, model)
 
-    videos = {
-        "Train": generated_video_train,
-        "Test": generated_video_test
-    }
-    save_videos(checkpoint_dir, i, videos)
-    save_model(checkpoint_dir, i, model)
+def save_image_predictions(run_name, dataset, model):
+  output_dir = os.path.join(config.OUTPUT_DIR, run_name, "preds")
+  os.makedirs(output_dir, exist_ok=True)
+
+  for data in dataset:
+    pe_coords, img, idx = data
+    pe_coords = pe_coords.to(config.DEVICE)
+    if idx > config.NUM_IMAGES_TO_SAVE:
+       break
+
+    with torch.no_grad():
+        pred = model(pe_coords, idx)
+        
+        pred = pred.permute((2, 0, 1))
+        pred_path = os.path.join(output_dir, f"{idx}.png")
+        pred = (pred * 255).to(torch.uint8).cpu()
+        io.write_png(pred, pred_path)
+
+def save_latents_and_model(run_name, model):
+    output_dir = os.path.join(config.OUTPUT_DIR, run_name)
+    os.makedirs(output_dir, exist_ok=True)
+    
+    latent_codes_path = os.path.join(output_dir, "latents.npy")
+    latent_codes = model.latents.get_codes().cpu().detach().numpy()
+    np.save(latent_codes_path, latent_codes)
+
+    model_path = os.path.join(output_dir, "latent2dMLP.pth")
+    model = model.mlp
+    print(type(model))
+    torch.save(model_path, model)
 
 
-# videos come in as (T, C, H, W) numpy array
-def save_videos(checkpoint_dir, i, videos):
-    for split, video in videos.items():
-        gif_path = os.path.join(checkpoint_dir, f"videoMLP_{split}_{i}.gif")
+# # videos and model are saved every config.RECORD_STATE_INTERVAL, metrics and figures are saved at the end of each training run
+# def save_checkpoint(run_name,
+#                     i, 
+#                     generated_video_train, 
+#                     generated_video_test,
+#                     model):
+#     checkpoint_dir = os.path.join(config.OUTPUT_DIR, f"{i}/{run_name}")
+#     os.makedirs(checkpoint_dir, exist_ok=True)
 
-        print("writing train video of shape", video.shape, gif_path)
-        video = (video * 255).astype(np.uint8)
-        video = np.transpose(video, (0, 2, 3, 1))
-        imageio.mimsave(gif_path, video, format=config.VIDEO_FORMAT, fps=config.FPS)
+#     videos = {
+#         "Train": generated_video_train,
+#         "Test": generated_video_test
+#     }
+#     save_videos(checkpoint_dir, i, videos)
+#     save_model(checkpoint_dir, i, model)
+
+
+# # videos come in as (T, C, H, W) numpy array
+# def save_videos(checkpoint_dir, i, videos):
+#     for split, video in videos.items():
+#         gif_path = os.path.join(checkpoint_dir, f"videoMLP_{split}_{i}.gif")
+
+#         print("writing train video of shape", video.shape, gif_path)
+#         video = (video * 255).astype(np.uint8)
+#         video = np.transpose(video, (0, 2, 3, 1))
+#         imageio.mimsave(gif_path, video, format=config.VIDEO_FORMAT, fps=config.FPS)
         
 
-def save_model(checkpoint_dir, i, model):
-    model_path = os.path.join(checkpoint_dir, f"videoMLP_{i}.pth")
-    torch.save(model, model_path)
+# def save_model(checkpoint_dir, i, model):
+#     model_path = os.path.join(checkpoint_dir, f"videoMLP_{i}.pth")
+#     torch.save(model, model_path)
 
 
 def save_figs_and_metrics(outputs):

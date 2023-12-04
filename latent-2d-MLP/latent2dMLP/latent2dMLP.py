@@ -12,6 +12,9 @@ class LatentCodes(nn.Module):
 
     def forward(self, idx):
         return self.latents[idx]
+    
+    def get_codes(self):
+        return self.latents
 
 
 # input: (224, 224, pe_dim+latent_dim)
