@@ -1,7 +1,7 @@
 import os
 import torch 
 
-DEBUG = False
+DEBUG = True
 
 if torch.cuda.is_available():
   DEVICE='cuda'
@@ -11,6 +11,8 @@ print(DEVICE)
 
 
 ROOT_DIR = os.path.join("./")
+OUTPUT_DIR_NAME = f"outputs-debug" if DEBUG else f"outputs"
+OUTPUT_DIR = os.path.join(ROOT_DIR, OUTPUT_DIR_NAME)
 
 # data
 DATA_DIR = os.path.join(ROOT_DIR, "dataset", "rand-images")
@@ -33,21 +35,6 @@ GAUSSIAN_STDEV_SCALES = [1., 10., 100.]
 for scale in GAUSSIAN_STDEV_SCALES:
   B_DICT[f'gauss{scale}'] = B_gauss * scale 
 
-
-######################################### below is not for this model
-
-VIDEO_NAME = "jelly"
-VIDEO_DIR = os.path.join(DATA_DIR, f"{VIDEO_NAME}/ground_truth/{VIDEO_NAME}")
-
-OUTPUT_DIR_NAME = f"outputs-debug-{VIDEO_NAME}" if DEBUG else f"outputs-{VIDEO_NAME}"
-OUTPUT_DIR = os.path.join(ROOT_DIR, OUTPUT_DIR_NAME)
-NPY_DIR = os.path.join(OUTPUT_DIR, "npy")
-
-FRAME_SUFFIX = ".png"
-NUM_DIGITS_FOR_PNG_NAME = '05'
-NUM_FRAMES = 2 if DEBUG else 100
-BATCH_SIZE = 1
-
 # training related
 LEARNING_RATE = 1e-4
 ITERATIONS = 1 if DEBUG else 3001
@@ -57,9 +44,4 @@ RECORD_PSNR = True
 RECORD_SSIM = True
 
 
-# save related
-VIDEO_FORMAT = 'GIF'
-FPS = 30
-
-with open("config.py", "r") as f:
-  print(f.read())
+######################################### below is not for this model

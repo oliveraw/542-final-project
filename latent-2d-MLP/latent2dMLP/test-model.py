@@ -2,8 +2,10 @@ import dataset
 import config
 from latent2dMLP.latent2dMLP import CombinedModel, LatentCodes
 
+import torch
+
 codes = LatentCodes()
-assert codes(1) != codes(2)
+assert torch.all(codes(1) != codes(2))
 
 for B_matrix in config.B_DICT.values():
     dset = dataset.PE_IMAGES(B_matrix)

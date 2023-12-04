@@ -50,10 +50,10 @@ RECORD_SSIM = True
 MAPPING_SIZE = 256
 # adding mapping matrices into this dict will induce another training run
 B_DICT = {}
-B_DICT['none'] = None                                 # Standard network - no mapping
+# B_DICT['none'] = None                                 # Standard network - no mapping
 # B_DICT['basic'] = torch.eye(3).to(DEVICE)           # Basic mapping
 B_gauss = torch.randn((MAPPING_SIZE, 3))              # Three different scales of Gaussian Fourier feature mappings
-GAUSSIAN_STDEV_SCALES = [1., 10., 100.]
+GAUSSIAN_STDEV_SCALES = [100.]
 for scale in GAUSSIAN_STDEV_SCALES:
   B_DICT[f'gauss{scale}'] = B_gauss * scale
 

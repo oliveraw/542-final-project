@@ -59,21 +59,15 @@ def save_figs_and_metrics(outputs):
     metrics = {}
     if config.RECORD_PSNR:
         metrics["PSNR"] = {
-            "Train": {
-                run_name: outputs[run_name]['train_psnrs'] for run_name in outputs
-            },
             "Test": {
-                run_name: outputs[run_name]['test_psnrs'] for run_name in outputs
-            }
+                run_name: outputs[run_name]['psnrs'] for run_name in outputs
+            },
         }
     if config.RECORD_SSIM:
         metrics["SSIM"] = {
-            "Train": {
-                run_name: outputs[run_name]['train_ssims'] for run_name in outputs
-            },
             "Test": {
-                run_name: outputs[run_name]['test_ssims'] for run_name in outputs
-            }
+                run_name: outputs[run_name]['ssims'] for run_name in outputs
+            },
         }
 
     for metric in metrics:

@@ -1,4 +1,5 @@
 import os
+import shutil
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -8,6 +9,16 @@ import imageio
 
 import config
 
+def save_gt_imgs_to_output_dir(filenames):
+    src_dir = config.DATA_DIR
+    dest_dir = os.path.join(config.OUTPUT_DIR, "gt_images")
+    os.makedirs(dest_dir, exist_ok=True)
+    for i, filename in enumerate(filenames):
+        src_path = os.path.join(src_dir, filename)
+        output_path = os.path.join(dest_dir, f"{i}.png")
+        shutil.copy(src_path, output_path)
+    
+
 class PE_IMAGES(Dataset):
     # Fourier feature mapping
     # x: (H, W, 2) vector of (x, y)
@@ -16,14 +27,13 @@ class PE_IMAGES(Dataset):
         if B is None:
             return x
         else:
-            print(x.dtype, B.dtype)
             x_proj = torch.matmul(2.*np.pi*x, B.T)
             res = torch.concat([torch.sin(x_proj), torch.cos(x_proj)], dim=-1)
             return res
     
     def __init__(self, B_matrix):
         # self.img_dataset = torchvision.datasets.
-        self.filenames = os.listdir(config.DATA_DIR)
+        self.filenames = os.listdir(config.DATA_DIR)[0:config.NUM_IMAGES_TO_USE]
         # print(self.filenames)
         
         self.H, self.W = config.RESOLUTION
@@ -34,6 +44,8 @@ class PE_IMAGES(Dataset):
 
         self.resize = transforms.Resize(config.RESOLUTION)
 
+        # save_gt_imgs_to_output_dir(self.filenames)
+
     def __len__(self):
         return config.NUM_IMAGES_TO_USE
     
@@ -41,9 +53,9 @@ class PE_IMAGES(Dataset):
         img_name = self.filenames[idx]
         img_path = os.path.join(config.DATA_DIR, img_name)
         img = imageio.imread(img_path)
-        print("img size", img.shape)
-        img = torch.tensor(img).permute((2, 0, 1))      # to torch form (224, 224, 3) -> (3, 224, 224)
+        img = torch.tensor(img, dtype=torch.float32).permute((2, 0, 1))      # to torch form (224, 224, 3) -> (3, 224, 224)
         img = self.resize(img)
-        img = torch.tensor(img).permute((1, 2, 0))      # undo torch form
+        img = img.permute((1, 2, 0))      # undo torch form
+        img = img / 255.0
 
         return self.pe_coord_grid, img, idx
