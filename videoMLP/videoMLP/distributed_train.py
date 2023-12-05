@@ -44,7 +44,7 @@ def train_model_distributed(rank, world_size, run_name, B, dataset, outputs_queu
     setup(rank, world_size)
 
     # do this just to get shape
-    (first_xyt, _, _, _) = next(iter(dataset))
+    (first_xyt, _, _, _, _) = next(iter(dataset))
     if B != None:   # None indicates no postional encoding
        B = B.to(rank)
     in_channels = input_mapping(first_xyt.to(rank), B).shape[-1]
@@ -71,12 +71,12 @@ def train_model_distributed(rank, world_size, run_name, B, dataset, outputs_queu
         gt_video_train = []
         gt_video_test = []
         for data in dataset:
-            xyt_train, gt_train, xyt_test, gt_test = data
+            xyt_train, gt_train, xyt_test, gt_test, data_idx = data
             xyt_train, gt_train, xyt_test, gt_test = xyt_train.to(rank), gt_train.to(rank), xyt_test.to(rank), gt_test.to(rank)
 
             optimizer.zero_grad()
 
-            y_train_pred = model(input_mapping(xyt_train, B)).to(rank)
+            y_train_pred = model(input_mapping(xyt_train, B), data_idx).to(rank)
 
             # print("actually predicted", y_train_pred.shape)
             loss = model_loss(y_train_pred, gt_train)
@@ -88,7 +88,7 @@ def train_model_distributed(rank, world_size, run_name, B, dataset, outputs_queu
                 gt_video_train.append(torchify(gt_train))
 
                 with torch.no_grad():
-                    y_test_pred = model(input_mapping(xyt_test, B))
+                    y_test_pred = model(input_mapping(xyt_test, B), data_idx)
                     generated_video_test.append(torchify(y_test_pred))
                     gt_video_test.append(torchify(gt_test))
 

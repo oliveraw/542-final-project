@@ -56,7 +56,7 @@ def train_model(run_name, B):
               ssims.append(structural_similarity_index_measure(generated_images, gt_images).item())
 
     # save final image predictions, latent codes, and model .pth
-    save_final_checkpoint(run_name, dset, model)
+    save_final_checkpoint(run_name, dset, model, B)
 
     return {
         'psnrs': psnrs,

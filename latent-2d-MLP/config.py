@@ -1,7 +1,7 @@
 import os
 import torch 
 
-DEBUG = True
+DEBUG = False
 
 if torch.cuda.is_available():
   DEVICE='cuda'
@@ -44,6 +44,7 @@ RECORD_PSNR = True
 RECORD_SSIM = True
 
 NUM_IMAGES_TO_SAVE = 10
+NUM_INTERPOLATIONS = 5
 
 
 ##########################################################

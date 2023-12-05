@@ -19,6 +19,7 @@ MASTER_PORT = "12345"
 ROOT_DIR = os.path.join("/home/oliveraw/eecs542/542-final-project/videoMLP")
 DATA_DIR = os.path.join(ROOT_DIR, "dataset/waic-tsr")
 
+# VIDEO_NAMES = ["billiard", "jelly", "running_women", "water"]
 VIDEO_NAME = "water"
 VIDEO_DIR = os.path.join(DATA_DIR, f"{VIDEO_NAME}/ground_truth/{VIDEO_NAME}")
 
@@ -36,7 +37,8 @@ BATCH_SIZE = 1
 # model related
 NUM_LAYERS = 4
 NUM_CHANNELS = 256
-USE_PEG = False
+USE_LATENTS = True
+LATENT_DIMENSION = 128
 
 # training related
 LEARNING_RATE = 1e-4
@@ -50,10 +52,10 @@ RECORD_SSIM = True
 MAPPING_SIZE = 256
 # adding mapping matrices into this dict will induce another training run
 B_DICT = {}
-# B_DICT['none'] = None                                 # Standard network - no mapping
+B_DICT['none'] = None                                 # Standard network - no mapping
 # B_DICT['basic'] = torch.eye(3).to(DEVICE)           # Basic mapping
 B_gauss = torch.randn((MAPPING_SIZE, 3))              # Three different scales of Gaussian Fourier feature mappings
-GAUSSIAN_STDEV_SCALES = [100.]
+GAUSSIAN_STDEV_SCALES = [1., 10., 100.]
 for scale in GAUSSIAN_STDEV_SCALES:
   B_DICT[f'gauss{scale}'] = B_gauss * scale
 
