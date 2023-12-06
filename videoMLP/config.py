@@ -10,7 +10,7 @@ else:
   DEVICE='cpu'
 
 # distributed training
-DISTRIBUTED = True
+DISTRIBUTED = False
 NUM_GPUS = 2 if DISTRIBUTED else 1    # num gpus
 GPU_BACKEND = "gloo"
 MASTER_ADDR = "localhost"
@@ -19,30 +19,25 @@ MASTER_PORT = "12345"
 ROOT_DIR = os.path.join("/home/oliveraw/eecs542/542-final-project/videoMLP")
 DATA_DIR = os.path.join(ROOT_DIR, "dataset/waic-tsr")
 
-# VIDEO_NAMES = ["billiard", "jelly", "running_women", "water"]
-VIDEO_NAME = "water"
-VIDEO_DIR = os.path.join(DATA_DIR, f"{VIDEO_NAME}/ground_truth/{VIDEO_NAME}")
+VIDEO_NAMES = ["water", "jelly"]
+NUM_VIDEOS = len(VIDEO_NAMES)
 
-OUTPUT_DIR_NAME = f"outputs-debug-{VIDEO_NAME}" if DEBUG else f"outputs-{VIDEO_NAME}"
+OUTPUT_DIR_NAME = f"outputs-debug" if DEBUG else f"outputs"
 OUTPUT_DIR = os.path.join(ROOT_DIR, OUTPUT_DIR_NAME)
-NPY_DIR = os.path.join(OUTPUT_DIR, "npy")
 
-FRAME_SUFFIX = ".png"
-NUM_DIGITS_FOR_PNG_NAME = '05'
 NUM_FRAMES = 2 if DEBUG else 100
-RESOLUTION = (360, 640)           # this refers to the test resolution
+RESOLUTION = (180, 320)           # this refers to the test resolution
 TRAIN_RESOLUTION_PIXEL_SKIP = 2   # indicates that test will be 2x train resolution
-BATCH_SIZE = 1
 
 # model related
-NUM_LAYERS = 4
-NUM_CHANNELS = 256
 USE_LATENTS = True
 LATENT_DIMENSION = 128
+NUM_LAYERS = 4
+NUM_CHANNELS = 256
 
 # training related
 LEARNING_RATE = 1e-4
-ITERATIONS = 50 if DEBUG else 3000
+ITERATIONS = 50 if DEBUG else 9000
 RECORD_STATE_INTERVAL = 500
 RECORD_METRICS_INTERVAL = 25
 RECORD_PSNR = True
@@ -52,15 +47,16 @@ RECORD_SSIM = True
 MAPPING_SIZE = 256
 # adding mapping matrices into this dict will induce another training run
 B_DICT = {}
-B_DICT['none'] = None                                 # Standard network - no mapping
-# B_DICT['basic'] = torch.eye(3).to(DEVICE)           # Basic mapping
-B_gauss = torch.randn((MAPPING_SIZE, 3))              # Three different scales of Gaussian Fourier feature mappings
+B_DICT['none'] = None                                                # Standard network - no mapping
+# B_DICT['basic'] = torch.eye(3).to(DEVICE)                          # Basic mapping
+B_gauss = torch.randn((MAPPING_SIZE, 3), requires_grad=False)        # Three different scales of Gaussian Fourier feature mappings
 GAUSSIAN_STDEV_SCALES = [1., 10., 100.]
 for scale in GAUSSIAN_STDEV_SCALES:
   B_DICT[f'gauss{scale}'] = B_gauss * scale
 
 
 # save related
+NUM_INTERPOLATIONS = 5
 VIDEO_FORMAT = 'GIF'
 FPS = 30
 

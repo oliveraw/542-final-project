@@ -1,6 +1,6 @@
 import config
-from utils import save_checkpoint
-from utils import torchify
+from utils import torchify, untorchify
+from utils.save import save_checkpoint, save_interpolated_videos
 from videoMLP.videoMLP import VideoMLP
 
 import os
@@ -22,110 +22,92 @@ def setup(rank, world_size):
 
 def cleanup():
     dist.destroy_process_group()
-
-
-# Fourier feature mapping
-# receives (H, W, 3) vector of (x, y, t)
-def input_mapping(x, B):
-#   print("x shape: ", x.shape)
-  if B is None:
-    return x
-  else:
-    x_proj = torch.matmul(2.*np.pi*x, B.T)
-    res = torch.concat([torch.sin(x_proj), torch.cos(x_proj)], dim=-1)
-    # print("positional encoded shape", res.shape)
-    return res
   
 
 from torchmetrics.functional.image import peak_signal_noise_ratio
 from torchmetrics.functional.image import structural_similarity_index_measure
 def train_model_distributed(rank, world_size, run_name, B, dataset, outputs_queue):
+    torch.cuda.empty_cache()
     print(f"Running basic DDP training on rank {rank}, run name {run_name}")
     setup(rank, world_size)
 
-    # do this just to get shape
-    (first_xyt, _, _, _, _) = next(iter(dataset))
-    if B != None:   # None indicates no postional encoding
-       B = B.to(rank)
-    in_channels = input_mapping(first_xyt.to(rank), B).shape[-1]
+    if B != None:
+        B = B.to(rank)
+    model = VideoMLP(B).to(rank)
+    with torch.no_grad():                   # dummy forward pass to initialize lazy modules
+        (first_xyt, _, _, _, _) = next(iter(dataset))
+        first_xyt = first_xyt.to(rank)
+        model(first_xyt, 0)
 
-    model = VideoMLP(in_channels).to(rank)
     model = DDP(model, device_ids=[rank])
     model_loss = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
 
     train_psnrs = []
-    test_psnrs = []
+    # test_psnrs = []
     train_ssims = []
-    test_ssims = []
-    all_generated_videos_train = []
-    all_generated_videos_test = []
-    for i in range(config.ITERATIONS // config.NUM_GPUS + 1):
+    # test_ssims = []
+    for epoch in range(config.ITERATIONS // config.NUM_GPUS + 1):
         IS_MASTER = rank == 0
-        RECORD_METRICS = (i % config.RECORD_METRICS_INTERVAL == 0) and IS_MASTER
-        RECORD_STATE = (i % config.RECORD_STATE_INTERVAL == 0) and IS_MASTER
+        RECORD_METRICS = (epoch % config.RECORD_METRICS_INTERVAL == 0) and IS_MASTER
+        RECORD_STATE = (epoch % config.RECORD_STATE_INTERVAL == 0) and IS_MASTER
         # print("run name", run_name, "gpu rank", rank, "iteration", i)
 
-        generated_video_train = []
-        generated_video_test = []
-        gt_video_train = []
-        gt_video_test = []
+        cur_epoch_train_psnrs = []
+        # cur_epoch_test_psnrs = []
+        cur_epoch_train_ssims = []
+        # cur_epoch_test_ssims = []
+        generated_videos = []
         for data in dataset:
             xyt_train, gt_train, xyt_test, gt_test, data_idx = data
-            xyt_train, gt_train, xyt_test, gt_test = xyt_train.to(rank), gt_train.to(rank), xyt_test.to(rank), gt_test.to(rank)
+            xyt_train, gt_train= xyt_train.to(rank), gt_train.to(rank)
 
             optimizer.zero_grad()
 
-            y_train_pred = model(input_mapping(xyt_train, B), data_idx).to(rank)
+            pred_train = model(xyt_train, data_idx).to(rank)
 
             # print("actually predicted", y_train_pred.shape)
-            loss = model_loss(y_train_pred, gt_train)
+            loss = model_loss(pred_train, gt_train)
             loss.backward()
             optimizer.step()
 
             if RECORD_METRICS:
-                generated_video_train.append(torchify(y_train_pred))
-                gt_video_train.append(torchify(gt_train))
+                pred_train, gt_train = torchify(pred_train), torchify(gt_train)     # only necessary to be in (-1, C, H, W) format for ssim
+                cur_epoch_train_psnrs.append(peak_signal_noise_ratio(pred_train, gt_train).item())
+                cur_epoch_train_ssims.append(structural_similarity_index_measure(pred_train, gt_train).item())
 
-                with torch.no_grad():
-                    y_test_pred = model(input_mapping(xyt_test, B), data_idx)
-                    generated_video_test.append(torchify(y_test_pred))
-                    gt_video_test.append(torchify(gt_test))
+                # with torch.no_grad():
+                #     xyt_test, gt_test  = xyt_test.to(rank), gt_test.to(rank)
+                #     pred_test = model(xyt_test, data_idx)
+                #     pred_test, gt_test = torchify(pred_test), torchify(gt_test)     # only necessary to be in (-1, C, H, W) format for ssim
+                #     cur_epoch_test_psnrs.append(peak_signal_noise_ratio(pred_test, gt_test).item())
+                #     cur_epoch_test_ssims.append(structural_similarity_index_measure(pred_test, gt_test).item())
+
+                if RECORD_STATE:
+                    generated_videos.append(untorchify(pred_train))
 
         if RECORD_METRICS:
-            generated_video_train = torch.stack(generated_video_train)
-            generated_video_test = torch.stack(generated_video_test)
-            gt_video_train = torch.stack(gt_video_train)
-            gt_video_test = torch.stack(gt_video_test)
-            
-            if config.RECORD_PSNR:
-              train_psnrs.append(peak_signal_noise_ratio(generated_video_train, gt_video_train).item())
-              test_psnrs.append(peak_signal_noise_ratio(generated_video_test, gt_video_test).item())
-            
-            if config.RECORD_SSIM:
-              train_ssims.append(structural_similarity_index_measure(generated_video_train, gt_video_train).item())
-              test_ssims.append(structural_similarity_index_measure(generated_video_test, gt_video_test).item())
+            train_psnrs.append(np.average(cur_epoch_train_psnrs))
+            # test_psnrs.append(np.average(cur_epoch_test_psnrs))
+            train_ssims.append(np.average(cur_epoch_train_ssims))
+            # test_ssims.append(np.average(cur_epoch_test_ssims))
 
             if RECORD_STATE:
-              generated_video_train = generated_video_train.cpu().detach().numpy()
-              generated_video_test = generated_video_test.cpu().detach().numpy()
-              all_generated_videos_train.append(generated_video_train)
-              all_generated_videos_test.append(generated_video_test)
-              save_checkpoint(run_name,
-                              i * config.NUM_GPUS, 
-                              generated_video_train, 
-                              generated_video_test,
-                              model)
+                generated_videos = [x.cpu().detach().numpy() for x in generated_videos]
+                save_checkpoint(run_name,
+                                epoch * config.NUM_GPUS, 
+                                generated_videos,
+                                model)
+
+    save_interpolated_videos(run_name, model.module, first_xyt)
 
     # not sure how to handle the metrics collection with distributed, assume just using master is ok
     if IS_MASTER:
         outputs_queue.put({
             'train_psnrs': train_psnrs,
-            'test_psnrs': test_psnrs,
+            # 'test_psnrs': test_psnrs,
             'train_ssims': train_ssims,
-            'test_ssims': test_ssims,
-            'pred_train_vids': np.stack(all_generated_videos_train),
-            'pred_test_vids': np.stack(all_generated_videos_test),
+            # 'test_ssims': test_ssims,
         })
     cleanup()
 

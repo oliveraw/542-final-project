@@ -1,7 +1,7 @@
 import os
 import torch 
 
-DEBUG = False
+DEBUG = True
 
 if torch.cuda.is_available():
   DEVICE='cuda'
@@ -17,7 +17,8 @@ OUTPUT_DIR = os.path.join(ROOT_DIR, OUTPUT_DIR_NAME)
 # data
 DATA_DIR = os.path.join(ROOT_DIR, "dataset", "imagenette/noclass")
 RESOLUTION = (224, 224)
-NUM_IMAGES_TO_USE = 10
+NUM_IMAGES_TO_USE = 1000
+BATCH_SIZE = 16
 
 # model and latent
 PE_DIMENSION = 128
@@ -38,7 +39,6 @@ for scale in GAUSSIAN_STDEV_SCALES:
 # training related
 LEARNING_RATE = 1e-4
 ITERATIONS = 3 if DEBUG else 3001
-RECORD_STATE_INTERVAL = 1000
 RECORD_METRICS_INTERVAL = 25
 RECORD_PSNR = True
 RECORD_SSIM = True

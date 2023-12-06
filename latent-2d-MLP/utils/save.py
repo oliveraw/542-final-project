@@ -18,32 +18,29 @@ def save_final_checkpoint(run_name, dataset, model, B):
     create_interpolations(run_name, dataset, model)
 
 def save_image_predictions(run_name, dataset, model):
-  output_dir = os.path.join(config.OUTPUT_DIR, run_name, "preds")
-  os.makedirs(output_dir, exist_ok=True)
+    output_dir = os.path.join(config.OUTPUT_DIR, run_name, "preds")
+    os.makedirs(output_dir, exist_ok=True)
 
-  for data in dataset:
-    pe_coords, img, idx = data
+    pe_coords, img, idx = next(iter(dataset))
     pe_coords = pe_coords.to(config.DEVICE)
-    if idx > config.NUM_IMAGES_TO_SAVE:
-       break
+    print("pe_coords shape", pe_coords.shape)
 
     with torch.no_grad():
         pred = model(pe_coords, idx)
-        
-        pred_path = os.path.join(output_dir, f"{idx}.png")
-        pred = pred2img(pred)
-        # pred = (pred * 255).to(torch.uint8).cpu()
-        imageio.imwrite(pred_path, pred)
+
+        print("pred shape", pred.shape)
+        batch_size = config.BATCH_SIZE
+        for i in range(batch_size):
+            pred_path = os.path.join(output_dir, f"{i}.png")
+            pred_single = pred[i, :, :, :]
+            pred_single = pred2img(pred_single)
+            imageio.imwrite(pred_path, pred_single)
 
 
 def save_latents_model_and_B(run_name, model, B):
     output_dir = os.path.join(config.OUTPUT_DIR, run_name)
     os.makedirs(output_dir, exist_ok=True)
     
-    # latent_codes_path = os.path.join(output_dir, "latents.npy")
-    # latent_codes = model.latents.get_codes().cpu().detach().numpy()
-    # np.save(latent_codes_path, latent_codes)
-
     if B != None:
         B_path = os.path.join(output_dir, "B.npy")
         B = B.cpu().numpy()
@@ -56,14 +53,15 @@ def save_latents_model_and_B(run_name, model, B):
 def create_interpolations(run_name, dataset, model):
     save_path = os.path.join(config.OUTPUT_DIR, run_name, f"interpolation.png")
 
-    pe_coords, _, _ = dataset[0]    # all pe_coords are the same
+    pe_coords, _, _ = next(iter(dataset))
     pe_coords = pe_coords.to(config.DEVICE)
     with torch.no_grad():
-        interpolations, weights = model.interpolate(pe_coords, 0, 1)     # 0, 1 as interpolation indices, returns a list of (224, 224, 3) imgs
-        num_cols = len(interpolations)
-        fig, axes = plt.subplots(nrows=1, ncols=num_cols, figsize=(10, 3))
+        batch_interpolations, weights = model.interpolate(pe_coords, 0, 1)     # 0, 1 as interpolation indices, returns a list of (# weights, B, 224, 224, 3) imgs
+        num_weights, _, _, _, _ = batch_interpolations.shape
+        interpolations = batch_interpolations[:, 0, :, :, :]
+        fig, axes = plt.subplots(nrows=1, ncols=num_weights, figsize=(10, 3))
         fig.suptitle(f"Interpolations for {run_name}")
-        for i in range(num_cols):
+        for i in range(num_weights):
             interpolation = interpolations[i]
             weight = weights[i].item()
             axes[i].imshow(pred2img(interpolation))

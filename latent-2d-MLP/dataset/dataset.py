@@ -34,16 +34,16 @@ class PE_IMAGES(Dataset):
     def __init__(self, B_matrix):
         self.resize = transforms.Resize(config.RESOLUTION)
         img_names = sorted(os.listdir(config.DATA_DIR))[0:config.NUM_IMAGES_TO_USE]
-        self.imgs = []
-        for img_name in img_names:
-            img_path = os.path.join(config.DATA_DIR, img_name)
-            img = imageio.imread(img_path)
-            # print(img_path, img.shape)
-            img = torch.tensor(img, dtype=torch.float32).permute((2, 0, 1))      # to torch form (224, 224, 3) -> (3, 224, 224)
-            img = self.resize(img)
-            img = img.permute((1, 2, 0))      # undo torch form
-            img = img / 255.0
-            self.imgs.append(img)
+        self.img_paths = [os.path.join(config.DATA_DIR, img_name) for img_name in img_names]
+        # for img_name in img_names:
+        #     img_path = os.path.join(config.DATA_DIR, img_name)
+        #     img = imageio.imread(img_path)
+        #     print(img_path, img.shape)
+        #     img = torch.tensor(img, dtype=torch.float32).permute((2, 0, 1))      # to torch form (224, 224, 3) -> (3, 224, 224)
+        #     img = self.resize(img)
+        #     img = img.permute((1, 2, 0))      # undo torch form
+        #     img = img / 255.0
+        #     self.imgs.append(img)
         
         self.H, self.W = config.RESOLUTION
         x_coords = np.linspace(0, 1, self.W, endpoint=False)   
@@ -55,5 +55,11 @@ class PE_IMAGES(Dataset):
         return config.NUM_IMAGES_TO_USE
     
     def __getitem__(self, idx):
-        img = self.imgs[idx]
+        img_path = self.img_paths[idx]
+        img = imageio.imread(img_path)
+        # print(img_path, img.shape)
+        img = torch.tensor(img, dtype=torch.float32).permute((2, 0, 1))      # to torch form (224, 224, 3) -> (3, 224, 224)
+        img = self.resize(img)
+        img = img.permute((1, 2, 0))      # undo torch form
+        img = img / 255.0
         return self.pe_coord_grid, img, idx

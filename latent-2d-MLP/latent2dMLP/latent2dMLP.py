@@ -51,7 +51,10 @@ class CombinedModel(nn.Module):
     # output should be (224, 224, 3) rgb image
     def forward(self, pe_coords, idx):
         code = self.latents(idx)
-        code = code.broadcast_to((*config.RESOLUTION, config.LATENT_DIMENSION))
+        code = code.unsqueeze(1).unsqueeze(1)
+        # print('latent shape', code.shape)
+        B, H, W, _ = pe_coords.shape
+        code = code.broadcast_to((B, H, W, config.LATENT_DIMENSION))
         # print("broadcasted latent code shape", code.shape)
         
         input = torch.concat((pe_coords, code), -1)
@@ -65,7 +68,8 @@ class CombinedModel(nn.Module):
         weights = torch.linspace(0, 1, config.NUM_INTERPOLATIONS).to(config.DEVICE)
         for weight in weights:
             interpolated_code = torch.lerp(code1, code2, weight)
-            interpolated_code = interpolated_code.broadcast_to((*config.RESOLUTION, config.LATENT_DIMENSION))
+            B, H, W, _ = pe_coords.shape
+            interpolated_code = interpolated_code.broadcast_to((B, H, W, config.LATENT_DIMENSION))
             input = torch.concat((pe_coords, interpolated_code), -1)
             interpolations.append(self.mlp(input))
-        return interpolations, weights
+        return torch.stack(interpolations), weights
