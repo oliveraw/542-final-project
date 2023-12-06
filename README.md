@@ -1,27 +1,29 @@
-# Latent Coordinate Networks for Images and Video
+# Latent Coordinate Networks for Image and Video Memorization
 
-This project investigates the use of latent noise vectors for remembering image and video information. There are multiple stages to the project.
+We use a coordinate MLP with a learned latent code attached to the input in order to learn multiple images and videos with a single network. Having first validated that such an MLP is able to learn many images at once, we turn to learning multiple videos. We use selected videos from the [WAIC-TSR](https://www.wisdom.weizmann.ac.il/~vision/DeepTemporalSR/supplementary/Dataset.html) dataset, showing only our video results below:
 
-## 1. Video Data
-First, we train a videoMLP to validate that a coordinate network can remember video data. We use the random positional encoding described by Tancik et al. to embed our video data as follows. 
+### 1. Using a Coordinate MLP to Remember a Single Video
+First, we validate that a coordinate MLP is able to learn an implicit representation for video. We use the same positional encoding scheme as the 2d image MLP, only changing the smaller dimension of the $\mathbf{B}$ matrix from 2 to 3. 
 
-Formally, we would like to learn a function $f: \mathbb{R}^3 \rightarrow \mathbb{R}^3$, where our input vector $\mathbf{x}$ is of the form $(x, y, t)$, and the output vector represents an RGB color, $(r, g, b)$. 
-
-We apply a positional encoding, $\mathbf{B}$, which is a Gaussian random noise matrix, with varying standard deviations, following the approach of (Tancik). We use standard deviations of $\sigma = \{1, 10, 100\}$ for the positional encoding. Our results are shown below:
-
-Note: you can click on each gif to expand it and see a full resolution version!
-
-|Ground Truth| No Pos. Enc. | $\sigma = 1$ | $\sigma = 10$ | $\sigma = 100$ |
+| Ground Truth | No Pos. Enc. | $\sigma = 1$ | $\sigma = 10$ | $\sigma = 100$ |
 |---|---|---|---|---|
 |<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/gt.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/none/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/gauss1.0/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/gauss10.0/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/3000/gauss100.0/videoMLP_Test_3000.gif" width="150">|
 |<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/gt.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/3000/none/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/3000/gauss1.0/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/3000/gauss10.0/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/3000/gauss100.0/videoMLP_Test_3000.gif" width="150">|
 
+### 2. Using a Coordinate MLP to Remember Pairs of Videos
+We then attempt to learn pairs of videos using a latent code attached to each input video. We notice that the resulting video quality is decreased from the single-video training. Due to GPU constraints, we decrease the resolution of the two videos by a factor of 2. Results are shown below:
 
-For training, we use.... We use videos at half-resolution for the train set, and test on videos at full resolution. 
+| Ground Truth | No Pos. Enc. | $\sigma = 1$ | $\sigma = 10$ | $\sigma = 100$ |
+|---|---|---|---|---|
+|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water/gt.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/9000/none/videos/water.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/9000/gauss1.0/videos/water.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/9000/gauss10.0/videos/water.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/9000/gauss100.0/videos/water.gif" width="150">|
+|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/gt.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/9000/none/videos/jelly.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/9000/gauss1.0/videos/jelly.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/9000/gauss10.0/videos/jelly.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/9000/gauss100.0/videos/jelly.gif" width="150">|
 
-We observe artifacts indicating overfitting for $\sigma = 100$
-
-## 2. Adding Latent Vectors for Input Images
-
-## 3. Adding Latent Vectors for Input Videos
+#### Interpolation Between Latent Codes For Pairs of Videos
+Similar to our experiments for images, we also interpolate between latent codes and show the results below:
+|| 0.0 | 0.25 | 0.5 | 0.75 | 1.0 |
+|---|---|---|---|---|---|
+|No Pos. Enc.|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/none/0.0.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/none/0.25.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/none/0.5.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/none/0.75.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/none/1.0.gif" width="150">|
+|$\sigma = 1$|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss1.0/0.0.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss1.0/0.25.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss1.0/0.5.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss1.0/0.75.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss1.0/1.0.gif" width="150">|
+|$\sigma = 10$|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss10.0/0.0.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss10.0/0.25.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss10.0/0.5.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss10.0/0.75.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss10.0/1.0.gif" width="150">|
+|$\sigma = 100$|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss100.0/0.0.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss100.0/0.25.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss100.0/0.5.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss100.0/0.75.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/water-jelly-9000iters/interpolations/gauss100.0/1.0.gif" width="150">
 
