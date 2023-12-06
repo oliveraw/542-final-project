@@ -3,7 +3,7 @@
 We use a coordinate MLP with a learned latent code attached to the input in order to learn multiple images and videos with a single network. Having first validated that such an MLP is able to learn many images at once, we turn to learning multiple videos. We show only our video results below:
 
 ### Using a Coordinate MLP to Remember a Single Video
-First, we validate that a coordinate MLP is able to learn an implicit representation for video. We use the same positional encoding scheme for images and video, only varying the smaller dimension of the \mathbf{B} matrix between 2 and 3. 
+First, we validate that a coordinate MLP is able to learn an implicit representation for video. We use the same positional encoding scheme for images and video, only varying the smaller dimension of the $\mathbf{B}$ matrix between 2 and 3. 
 
 | Ground Truth | No Pos. Enc. | $\sigma = 1$ | $\sigma = 10$ | $\sigma = 100$ |
 |---|---|---|---|---|
