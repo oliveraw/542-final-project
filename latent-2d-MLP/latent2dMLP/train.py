@@ -43,7 +43,6 @@ def train_model(run_name, B):
             if RECORD_METRICS:
                 pred = pred.permute((0, 3, 1, 2))    # convert to (B, C, H, W) format
                 gt_imgs = gt_imgs.permute((0, 3, 1, 2))
-                # print("generated_images shape", generated_images.shape, "gt_images", gt_images.shape)
                 if config.RECORD_PSNR:
                     psnr_per_epoch.append(peak_signal_noise_ratio(pred, gt_imgs).item())
                 

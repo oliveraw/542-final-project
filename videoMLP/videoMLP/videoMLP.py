@@ -17,9 +17,7 @@ class LatentCodes(nn.Module):
     def get_codes(self):
         return self.latents
     
-
 def combine_code_and_PE(pe, code):
-  # print("combining pe and code", pe.shape, code.shape)
   F, H, W, _ = pe.shape
   code = code.broadcast_to((F, H, W, config.LATENT_DIMENSION))
   return torch.concat((pe, code), -1)
@@ -27,13 +25,11 @@ def combine_code_and_PE(pe, code):
 # Fourier feature mapping
 # receives (100, H, W, 3) vector
 def input_mapping(x, B):
-  # print("input mapping, x shape: ", x.shape)
   if B is None:
     return x
   else:
     x_proj = torch.matmul(2.*np.pi*x, B.T)
     res = torch.concat([torch.sin(x_proj), torch.cos(x_proj)], dim=-1)
-    # print("positional encoded shape", res.shape)
     return res
 
 # in_channels is the only variable layer: depends on positional embedding size
@@ -63,6 +59,7 @@ class VideoMLP(nn.Module):
       if config.USE_LATENTS:
         code = self.latents(data_idx)
         x = combine_code_and_PE(x, code)
+
       return self.hidden_layers(x)
 
     def interpolate(self, x, idx1, idx2):
@@ -77,7 +74,6 @@ class VideoMLP(nn.Module):
         for weight in weights:
             interpolated_code = torch.lerp(code1, code2, weight)
             input = combine_code_and_PE(x, interpolated_code)
-            # print("after combining latent and pe", input.shape)
             interpolations.append(self.hidden_layers(input))
         return interpolations, weights
 

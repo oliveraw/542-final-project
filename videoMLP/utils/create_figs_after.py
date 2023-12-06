@@ -5,6 +5,7 @@ from utils import save_figs_and_metrics
 import os
 import collections
 
+# this file is not used in normal execution of the model
 # not enough gpu time to run the full training, had to split into 2 halves:
 # wrote numpy files to output directory, load them and generate full figures for metrics
 

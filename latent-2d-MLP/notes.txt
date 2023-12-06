@@ -2,6 +2,6 @@ Run some file in the directory (works as long as everything has __init__.py)
 python3.10 -m dataset.test-dataset.py
 
 To run training
-python3.10 -m videoMLP.run
+python3 -m latent2dMLP.run
 
 ./env/bin/python3.10 -m pip freeze > requirements.txt

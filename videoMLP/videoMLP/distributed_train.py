@@ -51,10 +51,9 @@ def train_model_distributed(rank, world_size, run_name, B, dataset, outputs_queu
         IS_MASTER = rank == 0
         RECORD_METRICS = (epoch % config.RECORD_METRICS_INTERVAL == 0) and IS_MASTER
         RECORD_STATE = (epoch % config.RECORD_STATE_INTERVAL == 0) and IS_MASTER
-        # print("run name", run_name, "gpu rank", rank, "iteration", i)
 
         cur_epoch_train_psnrs = []
-        # cur_epoch_test_psnrs = []
+        # cur_epoch_test_psnrs = []         # unfortunately did not have the gpu capacity to use 2x resolution for test, can uncomment all these lines if you have the memory
         cur_epoch_train_ssims = []
         # cur_epoch_test_ssims = []
         generated_videos = []
@@ -65,8 +64,6 @@ def train_model_distributed(rank, world_size, run_name, B, dataset, outputs_queu
             optimizer.zero_grad()
 
             pred_train = model(xyt_train, data_idx).to(rank)
-
-            # print("actually predicted", y_train_pred.shape)
             loss = model_loss(pred_train, gt_train)
             loss.backward()
             optimizer.step()

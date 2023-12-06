@@ -25,7 +25,6 @@ PE_DIMENSION = 128
 LATENT_DIMENSION = 128
 NUM_LAYERS = 4
 NUM_CHANNELS = 512
-# SKIP_CONNECTION_INTERVAL =
 
 # adding mapping matrices into this dict will induce another training run
 B_DICT = {}

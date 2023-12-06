@@ -36,7 +36,6 @@ class Latent2DMLP(nn.Module):
 
     # x is (r x r x mapping_size)
     def forward(self, x):
-      # print("input shape", x.shape)
       return self.hidden_layers(x)
 
 
@@ -47,18 +46,14 @@ class CombinedModel(nn.Module):
         self.mlp = Latent2DMLP(using_PE)
 
     # pe_coords: (224, 224, 2*pe_dim) tensor of positional encodings (same across each image)
-    # idx: index of the image, for this we broadcase latent code to (224, 224, latent_dim) and concatenate as input
+    # idx: index of the image, for this we broadcast latent code to (224, 224, latent_dim) and concatenate as input
     # output should be (224, 224, 3) rgb image
     def forward(self, pe_coords, idx):
         code = self.latents(idx)
         code = code.unsqueeze(1).unsqueeze(1)
-        # print('latent shape', code.shape)
         B, H, W, _ = pe_coords.shape
         code = code.broadcast_to((B, H, W, config.LATENT_DIMENSION))
-        # print("broadcasted latent code shape", code.shape)
-        
         input = torch.concat((pe_coords, code), -1)
-        # print("mlp input", input.shape)
         return self.mlp(input)
     
     def interpolate(self, pe_coords, idx1, idx2):

@@ -58,7 +58,7 @@ def create_interpolations(run_name, dataset, model):
     with torch.no_grad():
         batch_interpolations, weights = model.interpolate(pe_coords, 0, 1)     # 0, 1 as interpolation indices, returns a list of (# weights, B, 224, 224, 3) imgs
         num_weights, _, _, _, _ = batch_interpolations.shape
-        interpolations = batch_interpolations[:, 0, :, :, :]
+        interpolations = batch_interpolations[:, 0, :, :, :]                    # just take interpolations from the first image
         fig, axes = plt.subplots(nrows=1, ncols=num_weights, figsize=(10, 3))
         fig.suptitle(f"Interpolations for {run_name}")
         for i in range(num_weights):
