@@ -13,7 +13,7 @@ First, we validate that a coordinate MLP is able to learn an implicit representa
 |<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/gt.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/3000/none/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/3000/gauss1.0/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/3000/gauss10.0/videoMLP_Test_3000.gif" width="150">|<img src="https://github.com/oliveraw/542-final-project/blob/master/results/videoMLP/jelly/3000/gauss100.0/videoMLP_Test_3000.gif" width="150">|
 
 ### 2. Using a Coordinate MLP to Remember Pairs of Videos
-We then attempt to learn pairs of videos. We notice that the resulting video quality is significantly decreased from the single-video training. Due to GPU constraints, we decrease the resolution of the two videos by a factor of 2. Results are shown below:
+We then attempt to learn pairs of videos using a latent code attached to each input video. We notice that the resulting video quality is decreased from the single-video training. Due to GPU constraints, we decrease the resolution of the two videos by a factor of 2. Results are shown below:
 
 | Ground Truth | No Pos. Enc. | $\sigma = 1$ | $\sigma = 10$ | $\sigma = 100$ |
 |---|---|---|---|---|
