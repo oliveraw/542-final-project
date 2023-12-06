@@ -19,7 +19,7 @@ MASTER_PORT = "12345"
 ROOT_DIR = os.path.join("/home/oliveraw/eecs542/542-final-project/videoMLP")
 DATA_DIR = os.path.join(ROOT_DIR, "dataset/waic-tsr")
 
-VIDEO_NAMES = ["water", "jelly"]
+VIDEO_NAMES = ["water", "jelly", "billiard", "running_women"]
 NUM_VIDEOS = len(VIDEO_NAMES)
 
 OUTPUT_DIR_NAME = f"outputs-debug" if DEBUG else f"outputs"
@@ -38,7 +38,7 @@ NUM_CHANNELS = 256
 # training related
 LEARNING_RATE = 1e-4
 ITERATIONS = 50 if DEBUG else 9000
-RECORD_STATE_INTERVAL = 500
+RECORD_STATE_INTERVAL = 3000
 RECORD_METRICS_INTERVAL = 25
 RECORD_PSNR = True
 RECORD_SSIM = True
