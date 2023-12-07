@@ -3,7 +3,7 @@
 We use a coordinate MLP with a learned latent code attached to the input in order to learn multiple images and videos with a single network. We use selected videos from the [WAIC-TSR](https://www.wisdom.weizmann.ac.il/~vision/DeepTemporalSR/supplementary/Dataset.html) dataset, showing only our video results below:
 
 ### Using a Coordinate MLP to Remember Multiple Videos
-We use the same positional encoding scheme as the 2d image MLP, only changing the smaller dimension of the $\mathbf{B}$ matrix from 2 to 3. Notice the blurriness of the video generated without positional encoding, as well as the  "static" texture of the $\sigma = 100$ positional encoding.
+We use the same positional encoding scheme as the 2d image MLP, $\gamma(\mathbf{x}) = \[\sin(2\pi\mathbf{Bx}), \cos(2\pi\mathbf{Bx})\]^T$, only changing the smaller dimension of the $\mathbf{B}$ matrix from 2 to 3. We vary the hyperparameter $\sigma$, the standard deviation of elements in the positional encoding matrix $\mathbf{B}$. Notice the blurriness of the video generated without positional encoding, as well as the "static" texture of the $\sigma = 100$ positional encoding.
 
 **🔴 Note: if you are on mobile it may be helpful to zoom in on the videos. 🔴**
 
