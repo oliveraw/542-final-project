@@ -5,7 +5,7 @@ We use a coordinate MLP with a learned latent code attached to the input in orde
 ### Using a Coordinate MLP to Remember Multiple Videos
 We use the same positional encoding scheme as the 2d image MLP, only changing the smaller dimension of the $\mathbf{B}$ matrix from 2 to 3. Notice the blurriness of the video generated without positional encoding, as well as the  "static" texture of the $\sigma = 100$ positional encoding.
 
-**Note: if you are on mobile you can zoom in to see the gifs at higher resolution.**
+**🔴 Note: if you are on mobile you can zoom in to see the gifs at higher resolution. 🔴**
 
 #### Results After Learning 2 Videos
 | Ground Truth | No Pos. Enc. | $\sigma = 1$ | $\sigma = 10$ | $\sigma = 100$ |
