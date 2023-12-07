@@ -1,7 +1,7 @@
 import os
 import torch 
 
-DEBUG = True
+DEBUG = False
 
 if torch.cuda.is_available():
   DEVICE='cuda'

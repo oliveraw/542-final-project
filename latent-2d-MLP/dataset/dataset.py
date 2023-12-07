@@ -57,7 +57,6 @@ class PE_IMAGES(Dataset):
     def __getitem__(self, idx):
         img_path = self.img_paths[idx]
         img = imageio.imread(img_path)
-        # print(img_path, img.shape)
         img = torch.tensor(img, dtype=torch.float32).permute((2, 0, 1))      # to torch form (224, 224, 3) -> (3, 224, 224)
         img = self.resize(img)
         img = img.permute((1, 2, 0))      # undo torch form

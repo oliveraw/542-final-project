@@ -15,7 +15,7 @@ from torchmetrics.functional.image import structural_similarity_index_measure
 # Train model with given hyperparameters and data
 def train_model(run_name, B):
     dset = dataset.PE_IMAGES(B)
-    dloader = torch.utils.data.DataLoader(dset, batch_size=config.BATCH_SIZE, shuffle=True, num_workers=2)
+    dloader = torch.utils.data.DataLoader(dset, batch_size=config.BATCH_SIZE, shuffle=True, num_workers=1)
 
     using_PE = (B != None)
 
